@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
 
 public class MainManager : MonoBehaviour
@@ -17,11 +18,13 @@ public class MainManager : MonoBehaviour
     private int m_Points;
     
     private bool m_GameOver = false;
+    public Text bestScore;
 
     
     // Start is called before the first frame update
     void Start()
     {
+        UpdateBestScore();
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -40,6 +43,7 @@ public class MainManager : MonoBehaviour
 
     private void Update()
     {
+        
         if (!m_Started)
         {
             if (Input.GetKeyDown(KeyCode.Space))
@@ -48,6 +52,7 @@ public class MainManager : MonoBehaviour
                 float randomDirection = Random.Range(-1.0f, 1.0f);
                 Vector3 forceDir = new Vector3(randomDirection, 1, 0);
                 forceDir.Normalize();
+                
 
                 Ball.transform.SetParent(null);
                 Ball.AddForce(forceDir * 2.0f, ForceMode.VelocityChange);
@@ -57,7 +62,11 @@ public class MainManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
+                
+               // UpdateBestScore();
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                
+               
             }
         }
     }
@@ -66,11 +75,23 @@ public class MainManager : MonoBehaviour
     {
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
+        
     }
 
     public void GameOver()
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        ScoreManager.Instance.Score = m_Points;
+        if (m_Points > ScoreManager.Instance.BestScore)
+        {
+            ScoreManager.Instance.SaveScore();
+            UpdateBestScore();
+        }
     }
+        void UpdateBestScore()
+        {
+        ScoreManager.Instance.LoadScore();
+        bestScore.text = "Best Score : " + ScoreManager.Instance.BestPlayer + " : " + ScoreManager.Instance.BestScore;
+        }
 }
